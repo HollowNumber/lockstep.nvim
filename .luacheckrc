@@ -1,9 +1,11 @@
 ignore = {
-  "631",    -- max_line_length
+	"631", -- max_line_length
 }
-read_globals = {
-  "vim",
-  "describe",
-  "it",
-  "assert"
+
+globals = {
+	"vim",
+}
+
+files["spec/"] = {
+	std = "+busted",
 }
