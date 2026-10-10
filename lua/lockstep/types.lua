@@ -1,6 +1,7 @@
 ---@meta
--- Type definitions
+---Type definitions
 
+---Which side of a function a site is.
 ---@alias lockstep.Kind "definition"|"declaration"
 
 ---@class lockstep.Range
@@ -10,16 +11,17 @@
 ---@field end_col integer
 
 ---@class lockstep.Site
----@field buf integer
+---@field buf? integer
+---@field path? string
 ---@field kind lockstep.Kind
 ---@field name string
 ---@field range lockstep.Range
----@field lang string Parser language that succeeded
+---@field lang string
 
 ---@class lockstep.SyncContext
 ---@field source lockstep.Site
 ---@field want lockstep.Kind
----@field root string Project root
+---@field root string
 
 ---@alias lockstep.Strategy fun(ctx: lockstep.SyncContext, found: fun(site: lockstep.Site), next: fun())
 
