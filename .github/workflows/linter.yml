@@ -1,24 +1,35 @@
----
-name: Lint Code Base
+name: Lint
+
 on:
-  pull_request: ~
+  pull_request:
   push:
     branches:
-      - master
+      - main
+
+permissions:
+  contents: read
 
 jobs:
-  build:
-    name: Lint Code Base
+  format:
+    name: format
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
-      - name: Lint Code Base
-        uses: github/super-linter/slim@v4
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LINTER_RULES_PATH: /
-          VALIDATE_JSCPD: false
-          VALIDATE_PYTHON_BLACK: false
+      - name: Check formatting
+        uses: JohnnyMorganz/stylua-action@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: 2.3.1
+          args: --check .
+
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Run luacheck
+        uses: lunarmodules/luacheck@v1.2.0
+        with:
+          args: .
