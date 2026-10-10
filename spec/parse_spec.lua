@@ -47,6 +47,8 @@ describe("parse.site_at", function()
 		assert.are.equal("definition", site.kind)
 		assert.are.equal("c", site.lang)
 		assert.are.equal(buf, site.buf)
+		assert.are.equal(4, site.name_pos.row)
+		assert.are.equal(0, site.name_pos.col)
 		assert.is_nil(site.path)
 	end)
 

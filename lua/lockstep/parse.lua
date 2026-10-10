@@ -33,7 +33,8 @@ end
 
 ---@param node TSNode
 ---@param source integer|string Buffer number or source text
----@return string?
+---@return string? name
+---@return TSNode? node
 local function function_name(node, source)
 	local decl = function_declarator(node)
 	local name = decl and decl:field("declarator")[1]
@@ -41,7 +42,7 @@ local function function_name(node, source)
 		return nil
 	end
 	-- `Foo::bar` and `bar` should match each other
-	return vim.treesitter.get_node_text(name, source):match("([%w_~]+)$")
+	return vim.treesitter.get_node_text(name, source):match("([%w_~]+)$"), name
 end
 
 ---From the return type (or first qualifier) to the end of the declarator.
@@ -148,11 +149,13 @@ end
 ---@param path? string Only for string sources: the file the text came from
 ---@return lockstep.Site?
 local function to_site(node, source, lang, path)
-	local name = function_name(node, source)
+	local name, name_node = function_name(node, source)
 	local range = signature_range(node)
-	if not name or not range then
+	if not name or not range or not name_node then
 		return nil
 	end
+
+	local row, col = name_node:start()
 
 	return {
 		buf = type(source) == "number" and source or nil,
@@ -162,6 +165,7 @@ local function to_site(node, source, lang, path)
 		name = name,
 		range = range,
 		lang = lang,
+		name_pos = { row = row, col = col },
 	}
 end
 

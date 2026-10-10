@@ -10,6 +10,10 @@
 ---@field end_row integer
 ---@field end_col integer
 
+---@class lockstep.Pos
+---@field row integer
+---@field col integer
+
 ---@class lockstep.Site
 ---@field buf? integer
 ---@field path? string
@@ -18,6 +22,7 @@
 ---@field range lockstep.Range
 ---@field lang string
 ---@field tick? integer
+---@field name_pos lockstep.Pos
 
 ---@class lockstep.SyncContext
 ---@field source lockstep.Site
