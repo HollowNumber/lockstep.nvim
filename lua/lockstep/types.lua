@@ -28,7 +28,9 @@
 ---@field source lockstep.Site
 ---@field want lockstep.Kind
 ---@field root string
+---@field seen table<string, true> Normalized paths already searched
 
----@alias lockstep.Strategy fun(ctx: lockstep.SyncContext, found: fun(site: lockstep.Site), next: fun())
+---A lookup strategy. Calls exactly one of `found` or `skip`.
+---@alias lockstep.Strategy fun(ctx: lockstep.SyncContext, found: fun(site: lockstep.Site), skip: fun())
 
 ---@alias lockstep.EditResult "changed"|"unchanged"|"readonly"|"stale"

@@ -101,6 +101,10 @@ local function parse(source, lang)
 	if lang and lang ~= own then
 		table.insert(langs, lang)
 	end
+	-- .h files are filetype cpp by default, and Neovim only bundles the C parser
+	if not vim.list_contains(langs, "c") then
+		table.insert(langs, "c")
+	end
 
 	for _, l in ipairs(langs) do
 		local ok, parser = pcall(vim.treesitter.get_parser, source, l)
@@ -169,14 +173,14 @@ local function to_site(node, source, lang, path)
 	}
 end
 
----The function signature at a position in a buffer.
 ---@param buf integer
 ---@param row integer 0-based
 ---@param col integer 0-based
+---@param lang? string Fallback if the buffer's own language has no parser
 ---@return lockstep.Site?
-function M.site_at(buf, row, col)
-	local root, lang = parse(buf)
-	if not root or not lang then
+function M.site_at(buf, row, col, lang)
+	local root, used = parse(buf, lang)
+	if not root or not used then
 		return nil
 	end
 
@@ -185,7 +189,7 @@ function M.site_at(buf, row, col)
 		return nil
 	end
 
-	return to_site(node, buf, lang)
+	return to_site(node, buf, used)
 end
 
 ---The first function of the wanted kind with the given name.
