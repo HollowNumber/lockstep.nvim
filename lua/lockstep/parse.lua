@@ -156,6 +156,7 @@ local function to_site(node, source, lang, path)
 
 	return {
 		buf = type(source) == "number" and source or nil,
+		tick = type(source) == "number" and vim.b[source].changedtick or nil,
 		path = path,
 		kind = kind_of(node),
 		name = name,

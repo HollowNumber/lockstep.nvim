@@ -17,6 +17,7 @@
 ---@field name string
 ---@field range lockstep.Range
 ---@field lang string
+---@field tick? integer
 
 ---@class lockstep.SyncContext
 ---@field source lockstep.Site
@@ -25,4 +26,4 @@
 
 ---@alias lockstep.Strategy fun(ctx: lockstep.SyncContext, found: fun(site: lockstep.Site), next: fun())
 
----@alias lockstep.EditResult "changed"|"unchanged"
+---@alias lockstep.EditResult "changed"|"unchanged"|"readonly"|"stale"
