@@ -82,7 +82,7 @@ end)
 
 describe("parse.find_by_name", function()
 	it("finds a declaration in a string source", function()
-		local site = assert(parse.find_by_name(HEADER, "add", "declaration", "cpp", "/x/a.h"))
+		local site = assert(parse.find_by_name(HEADER, "add", "declaration", "c", "/x/a.h"))
 		assert.are.equal("add", site.name)
 		assert.are.equal(0, site.range.start_row)
 		assert.are.equal("/x/a.h", site.path)

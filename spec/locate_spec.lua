@@ -21,7 +21,8 @@ end
 ---@param col integer
 ---@return lockstep.Site
 local function site_in(rel, row, col)
-	return assert(parse.site_at(open(rel), row, col))
+	local site = assert(parse.site_at(open(rel), row, col))
+	return site
 end
 
 ---Runs locate.find and waits for its callback.
@@ -45,7 +46,8 @@ end
 ---@param site lockstep.Site?
 ---@return string
 local function file_of(site)
-	return vim.fs.basename(vim.api.nvim_buf_get_name(assert(site and site.buf)))
+	local buf = assert(site and site.buf)
+	return vim.fs.basename(vim.api.nvim_buf_get_name(buf))
 end
 
 local function wipe_buffers()
@@ -94,7 +96,8 @@ describe("locate.find without clangd", function()
 
 	it("skips build directories when scanning", function()
 		local target = find(site_in("scan/main.c", 2, 2))
-		local path = vim.api.nvim_buf_get_name(assert(target and target.buf))
+		local buf = assert(target and target.buf)
+		local path = vim.api.nvim_buf_get_name(buf)
 		assert.is_truthy(path:find("/lib/deep.h$"))
 	end)
 
