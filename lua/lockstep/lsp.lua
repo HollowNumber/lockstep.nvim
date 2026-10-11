@@ -90,8 +90,8 @@ local function server(dispatchers)
 			if method == "initialize" then
 				reply(callback, notify_reply, next_id, { capabilities = { codeActionProvider = true } })
 			elseif method == "textDocument/codeAction" then
-				local ok, actions = pcall(code_actions, params)
-				reply(callback, notify_reply, next_id, ok and actions or {})
+				local ok, results = pcall(code_actions, params)
+				reply(callback, notify_reply, next_id, ok and results or {})
 			else
 				reply(callback, notify_reply, next_id, vim.NIL)
 			end
