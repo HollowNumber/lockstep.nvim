@@ -71,6 +71,10 @@ Or, equivalently, with lazy.nvim's `opts` or `require("lockstep").setup({ ... })
 Invalid options fall back to their defaults with a warning.
 Run `:checkhealth lockstep` to check your setup.
 
+## Documentation 
+
+See `:help lockstep` for all commands, options and the Lua API.
+
 ## Requirements 
 
 - Neovim 0.11+ 

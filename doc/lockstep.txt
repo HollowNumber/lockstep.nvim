@@ -1,0 +1,165 @@
+*lockstep.txt*        Keep C declarations and definitions in lockstep
+
+==============================================================================
+CONTENTS                                                   *lockstep-contents*
+
+  1. Introduction ........................................... |lockstep-intro|
+  2. Requirements .................................... |lockstep-requirements|
+  3. Commands ............................................ |lockstep-commands|
+  4. Mappings ............................................ |lockstep-mappings|
+  5. Configuration ......................................... |lockstep-config|
+  6. Code actions ..................................... |lockstep-code-action|
+  7. Lua API .................................................. |lockstep-api|
+  8. How the other side is found ......................... |lockstep-locating|
+  9. Limitations ...................................... |lockstep-limitations|
+
+==============================================================================
+1. INTRODUCTION                                               *lockstep-intro*
+
+lockstep keeps a C function's declaration and definition in sync. Change a
+function's return type or parameters on one side, run |:Lockstep| sync, and
+the other side is rewritten to match.
+
+Only the signature is replaced: everything from the return type to the closing
+parenthesis of the parameter list. Storage classes such as `static`, `inline`
+and `extern`, attributes, comments, the function body and the trailing `;` are
+left as they are on each side.
+
+The changed buffer is left unsaved, so you can review the edit and undo it
+with a single |u|.
+
+==============================================================================
+2. REQUIREMENTS                                        *lockstep-requirements*
+
+- Neovim 0.11 or newer.
+- The Treesitter C parser. Neovim ships it.
+- clangd (optional). With clangd attached, declarations in other files are
+  found directly. Without it, lockstep searches files instead.
+
+Run |:checkhealth| lockstep to check all of the above.
+
+==============================================================================
+3. COMMANDS                                                *lockstep-commands*
+
+                                                                   *:Lockstep*
+:Lockstep sync                                                *:Lockstep-sync*
+    Sync the function signature under the cursor to its counterpart: from a
+    definition to its declaration, or from a declaration to its definition.
+    The cursor can be anywhere in the function, including its body.
+
+==============================================================================
+4. MAPPINGS                                                *lockstep-mappings*
+
+lockstep defines no key mappings of its own. Map the |<Plug>| mapping to a key
+of your choice.
+
+                                                       *<Plug>(lockstep-sync)*
+<Plug>(lockstep-sync)
+    Normal mode. Same as |:Lockstep-sync|. Example: >lua
+        vim.keymap.set("n", "<leader>cs", "<Plug>(lockstep-sync)")
+<
+==============================================================================
+5. CONFIGURATION                                             *lockstep-config*
+
+                                                                 *g:lockstep*
+Set |g:lockstep| to a table. It can be set at any time; lockstep reads it when
+it needs a value. The defaults are: >lua
+    vim.g.lockstep = {
+        code_action = false,
+        lsp_timeout_ms = 1000,
+        project_scan = true,
+    }
+<
+Only the options you set need to be given. An invalid value falls back to its
+default, and lockstep warns once per session. |:checkhealth| lockstep lists
+all problems with the current configuration.
+
+                                                *lockstep-config-code_action*
+code_action ~
+    Type: boolean, default: `false`
+    Offer lockstep's actions in the code-action menu. See
+    |lockstep-code-action|.
+
+                                             *lockstep-config-lsp_timeout_ms*
+lsp_timeout_ms ~
+    Type: positive number, default: `1000`
+    How long to wait for a reply from clangd, in milliseconds, before trying
+    the next way of finding the other side. See |lockstep-locating|.
+
+                                               *lockstep-config-project_scan*
+project_scan ~
+    Type: boolean, default: `true`
+    Search the project's C files when no other method finds the other side.
+    Turn it off in very large projects if a failed sync takes too long.
+
+==============================================================================
+6. CODE ACTIONS                                         *lockstep-code-action*
+
+When |lockstep-config-code_action| is enabled, lockstep starts a small
+language server named `lockstep` inside Neovim for C and C++ buffers. It runs
+alongside clangd and only provides code actions.
+
+With the cursor on a function's signature, |vim.lsp.buf.code_action()| (or
+|gra|) offers "Sync signature to declaration" or "Sync signature to
+definition". The action is not offered inside the function body, to keep the
+menu short; |:Lockstep-sync| works from anywhere in the function.
+
+The client shows up as `lockstep` in |:checkhealth| vim.lsp and in statusline
+components that list attached clients.
+
+==============================================================================
+7. LUA API                                                      *lockstep-api*
+
+                                                             *lockstep.sync()*
+require("lockstep").sync({buf}, {row}, {col}, {on_done})
+    Sync the signature at a position. All arguments are optional.
+
+    Parameters: ~
+      • {buf}      (integer) Buffer number. Defaults to the current buffer.
+      • {row}      (integer) 0-based line. Defaults to the cursor.
+      • {col}      (integer) 0-based byte column. Defaults to the cursor.
+      • {on_done}  (function) Called once the sync has finished, with one of
+                   `"changed"`, `"unchanged"`, `"readonly"` or `"stale"`, or
+                   `nil` if no function or counterpart was found.
+
+    The lookup is asynchronous: the function returns before the sync is done.
+
+                                                            *lockstep.setup()*
+require("lockstep").setup({opts})
+    Optional. Merges {opts} into |g:lockstep|. It loads nothing else, so it is
+    safe to call at startup, for example through lazy.nvim's `opts` key.
+
+==============================================================================
+8. HOW THE OTHER SIDE IS FOUND                             *lockstep-locating*
+
+lockstep tries the following in order and uses the first match. A match must
+have the same function name and be of the opposite kind: a declaration when
+syncing from a definition, and the other way around.
+
+  1. clangd's "go to declaration" or "go to definition".
+  2. The same file, for example a `static` prototype at the top of a `.c`
+     file.
+  3. The file clangd names as the matching header or source file, searched by
+     name. This still works after the parameters have changed and clangd no
+     longer links the two.
+  4. Headers included with `#include "..."`, looked up next to the file, at
+     the project root and in `include/` under the root. Only when looking for
+     a declaration.
+  5. C and C++ buffers that are already open.
+  6. All C and C++ files under the project root, skipping `.git`, `build` and
+     similar directories. Disabled by |lockstep-config-project_scan|.
+
+Steps 1 and 3 need clangd and are skipped without it. The project root is the
+nearest directory containing `compile_commands.json`, `.git` or a `Makefile`.
+
+==============================================================================
+9. LIMITATIONS                                          *lockstep-limitations*
+
+- C only for now. C++ code with classes, namespaces or overloads is not
+  supported.
+- The signature is copied as written, including line breaks and indentation
+  of multi-line parameter lists. Run your formatter on the result if needed.
+- Functions are matched by name. With several functions of the same name
+  across files (`static` helpers, for instance), the first match wins.
+
+ vim:tw=78:ts=8:et:ft=help:norl:
