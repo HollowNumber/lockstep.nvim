@@ -7,7 +7,7 @@ M.lsp_timeout_ms = 1000
 
 local SCAN_LIMIT = 1000
 
-local ROOT_MARKERS = { "compile_commands.json", ".git", "Makefile" }
+local ROOT_MARKERS = { "compile_flags.txt", ".git", "Makefile" }
 
 local SKIP_DIRS = {
 	[".git"] = true,
