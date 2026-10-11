@@ -1,14 +1,14 @@
-local edit = require("lockstep.edit")
-local locate = require("lockstep.locate")
-local parse = require("lockstep.parse")
-local util = require("lockstep.util")
-
 local M = {}
 
 ---@param source lockstep.Site
 ---@param on_done fun(result: lockstep.EditResult?)
 ---@param attempt integer
 local function run(source, on_done, attempt)
+	local edit = require("lockstep.edit")
+	local locate = require("lockstep.locate")
+	local parse = require("lockstep.parse")
+	local util = require("lockstep.util")
+
 	local want = source.kind == "definition" and "declaration" or "definition"
 
 	locate.find(source, function(target)
@@ -59,14 +59,20 @@ function M.sync(buf, row, col, on_done)
 		row, col = cursor[1] - 1, cursor[2]
 	end
 
-	local site = parse.site_at(buf, row, col)
+	local site = require("lockstep.parse").site_at(buf, row, col)
 	if not site then
-		util.notify("Cursor isn't on a function", vim.log.levels.WARN)
+		require("lockstep.util").notify("Cursor isn't on a function", vim.log.levels.WARN)
 		on_done(nil)
 		return
 	end
 
 	run(site, on_done, 1)
+end
+
+---Optional, does the same as setting vim.g.lockstep
+---@param opts? lockstep.UserConfig
+function M.setup(opts)
+	vim.g.lockstep = vim.tbl_extend("force", vim.g.lockstep or {}, opts or {})
 end
 
 return M
