@@ -111,6 +111,8 @@ local function server(dispatchers)
 	}
 end
 
+M._server = server
+
 ---@param buf integer
 ---@return integer?
 function M.attach(buf)
