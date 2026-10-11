@@ -8,7 +8,7 @@ Keep C declarations and definitions in lockstep.
 
 ## Planned features 
 
-- Signature sync: edit a function's parameters in the `.c` file or the header, and the other side is updated to match. 
+- [X] Signature sync: edit a function's parameters in the `.c` file or the header, and the other side is updated to match. 
 - Live split view: see the counterpart update in a split as you type.
 - Scaffolding: generate a header from a source file (or stubs from a header), and add missing declarations as you go. 
 
