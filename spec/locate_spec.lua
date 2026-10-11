@@ -54,6 +54,8 @@ local function wipe_buffers()
 	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
 		vim.api.nvim_buf_delete(buf, { force = true })
 	end
+
+	vim.g.lockstep = nil
 end
 
 describe("locate.find without clangd", function()
@@ -231,7 +233,7 @@ describe("locate.find with clangd", function()
 	end)
 
 	it("moves on when clangd never answers", function()
-		locate.lsp_timeout_ms = 50
+		vim.g.lockstep = { lsp_timeout_ms = 50 }
 		fake_clangd({ ["textDocument/declaration"] = "never" })
 
 		local target = find(site_in("pair/math.c", 4, 2), {
@@ -250,5 +252,10 @@ describe("locate.find with clangd", function()
 
 		local target = find(site_in("renamed/src/impl.c", 4, 2), { locate.strategies[SWITCH] })
 		assert.are.equal("api.h", file_of(target))
+	end)
+
+	it("doesn't scan the project when project_scan is off", function()
+		vim.g.lockstep = { project_scan = false }
+		assert.is_nil(find(site_in("pair/math.h", 4, 4)))
 	end)
 end)

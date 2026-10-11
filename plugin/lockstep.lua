@@ -53,8 +53,7 @@ vim.api.nvim_create_autocmd("FileType", {
 	group = group,
 
 	callback = function(args)
-		local opts = vim.g.lockstep
-		if type(opts) ~= "table" or not opts.code_action then
+		if not require("lockstep.config").get().code_action then
 			return
 		end
 		require("lockstep.lsp").attach(args.buf)

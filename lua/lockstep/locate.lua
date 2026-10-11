@@ -3,8 +3,6 @@ local util = require("lockstep.util")
 
 local M = {}
 
-M.lsp_timeout_ms = 1000
-
 local SCAN_LIMIT = 1000
 
 local ROOT_MARKERS = { "compile_flags.txt", ".git", "Makefile" }
@@ -133,7 +131,7 @@ local function request(ctx, method, params, on_result)
 
 	timer = vim.defer_fn(function()
 		settle(nil)
-	end, M.lsp_timeout_ms)
+	end, require("lockstep.config").get().lsp_timeout_ms)
 	return true
 end
 
@@ -319,14 +317,23 @@ local function resolve(ctx, site)
 	return nil
 end
 
+---@return lockstep.Strategy[]
+local function default_strategies()
+	if require("lockstep.config").get().project_scan then
+		return M.strategies
+	end
+	return vim.tbl_filter(function(strategy)
+		return strategy ~= project_scan
+	end, M.strategies)
+end
+
 ---Calls `callback` exactly once, always asynchronously.
 ---@param source lockstep.Site
 ---@param callback fun(target: lockstep.Site?)
 ---@param strategies? lockstep.Strategy[]
 function M.find(source, callback, strategies)
 	local buf = assert(source.buf, "lockstep: source site has no buffer")
-	strategies = strategies or M.strategies
-
+	strategies = strategies or default_strategies()
 	local path = util.normalize_path(vim.api.nvim_buf_get_name(buf))
 
 	---@type lockstep.SyncContext
