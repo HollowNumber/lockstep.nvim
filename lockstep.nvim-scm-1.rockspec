@@ -13,6 +13,7 @@ build = {
 	copy_directories = {
 		"plugin",
 		"queries",
+		"doc",
 	},
 }
 

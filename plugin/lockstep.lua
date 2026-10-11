@@ -45,3 +45,17 @@ end, {
 vim.keymap.set("n", "<Plug>(lockstep-sync)", function()
 	require("lockstep").sync()
 end, { desc = "lockstep: sync the signature under the cursor" })
+
+local group = vim.api.nvim_create_augroup("lockstep", { clear = true })
+
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = { "c", "cpp" },
+	group = group,
+
+	callback = function(args)
+		if not require("lockstep.config").get().code_action then
+			return
+		end
+		require("lockstep.lsp").attach(args.buf)
+	end,
+})
