@@ -58,6 +58,27 @@ describe("lockstep.config", function()
 		end)
 	end)
 
+	describe("setup", function()
+		it("sets the options like vim.g.lockstep does", function()
+			require("lockstep").setup({ code_action = true })
+			assert.is_true(config.get().code_action)
+		end)
+
+		it("merges with an existing vim.g.lockstep", function()
+			vim.g.lockstep = { project_scan = false }
+			require("lockstep").setup({ code_action = true })
+			local got = config.get()
+			assert.is_true(got.code_action)
+			assert.is_false(got.project_scan)
+		end)
+
+		it("accepts no arguments", function()
+			require("lockstep").setup()
+			assert.are.same({}, vim.g.lockstep)
+			assert.is_false(config.get().code_action)
+		end)
+	end)
+
 	describe("validate", function()
 		it("accepts nil and a valid table", function()
 			assert.are.same({}, config.validate(nil))
