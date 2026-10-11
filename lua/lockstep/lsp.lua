@@ -88,7 +88,12 @@ local function server(dispatchers)
 		request = function(method, params, callback, notify_reply)
 			next_id = next_id + 1
 			if method == "initialize" then
-				reply(callback, notify_reply, next_id, { capabilities = { codeActionProvider = true } })
+				reply(
+					callback,
+					notify_reply,
+					next_id,
+					{ capabilities = { codeActionProvider = true, positionEncoding = "utf-8" } }
+				)
 			elseif method == "textDocument/codeAction" then
 				local ok, results = pcall(code_actions, params)
 				reply(callback, notify_reply, next_id, ok and results or {})
